@@ -1,28 +1,32 @@
-{{#if cityExists}}
-<div>
-    <h2>Weather for {{city}}</h2>
-</div>
-<div>
-    {{#each weather}}
+{{#each cities as |city|}}
+<div style="border:1px solid black;">
+    {{#if city.cityExists}}
     <div>
-        <div>
-            <img src='http://openweathermap.org/img/w/{{this.icon}}.png' width="100">
-        </div>
-        <div>
-            Main: {{this.main}}
-            <br>
-            Description: {{this.description}}
-        </div>
+        <h2>Weather for {{city.name}}</h2>
     </div>
-    {{/each}}
+    <div>
+        {{#each city.weather as |weather|}}
+        <div>
+            <div>
+                <img src='http://openweathermap.org/img/w/{{weather.icon}}.png' width="100">
+            </div>
+            <div>
+                Main: {{weather.main}}
+                <br>
+                Description: {{weather.description}}
+            </div>
+        </div>
+        {{/each}}
 
+    </div>
+    <div>
+        <h3>Min Temp: {{city.tempMin}}<sup>o</sup>{{units}}</h3>
+        <h3>Max Temp: {{city.tempMax}}<sup>o</sup>{{units}}</h3>
+    </div>
+    {{else}}
+    <div>
+        <h2>City Name <em>{{city.name}}</em> not found. Please try again</h2>
+    </div>
+    {{/if}}
 </div>
-<div>
-    <h3>Min Temp: {{tempMin}}<sup>o</sup>{{units}}</h3>
-    <h3>Max Temp: {{tempMax}}<sup>o</sup>{{units}}</h3>
-</div>
-{{else}}
-<div>
-    <h2>City Name <em>{{city}}</em> not found. Please try again</h2>
-</div>
-{{/if}}
+{{/each}}

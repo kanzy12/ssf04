@@ -23,6 +23,52 @@ var getDisplayUnit = (unitType) => {
     }
 }
 
+function getCityWeather(cityName, units) {
+    const queryParams = 
+    {
+        APPID: openweatherKey,
+        q: cityName,
+        units: units
+    };
+
+    return new Promise((resolve, reject) => {
+        Request.get('https://api.openweathermap.org/data/2.5/weather', 
+            { qs: queryParams},
+            (err, apiRes, apiBody) => {
+                if (err) {
+                    reject(err);
+                }
+
+                const result = JSON.parse(apiBody);
+
+                if (result['cod'] == 200)
+                {
+                    resolve({
+                        cityExists: true,
+                        name: result['name'],
+                        weather: result['weather'],
+                        tempMin: result['main']['temp_min'],
+                        tempMax: result['main']['temp_max'],
+                    });
+                }
+                else {
+                    resolve({
+                        cityExists: false,
+                        name: cityName
+                    });
+                }
+            }
+        );
+    });
+}
+
+async function getAllCitiesWeather(citiesArray, units){
+    return await Promise.all(citiesArray.map(city =>
+        {
+            return getCityWeather(city, units);
+        }));
+}
+
 //load express instance
 const app = express();
 
@@ -31,49 +77,23 @@ app.set('view engine', 'hbs');
 app.set('views', __dirname + '/views');
 
 app.get('/weather', (req, res) => {
-    console.info(req.query);
+    let citiesString = req.query['city'];
+    let citiesArray = citiesString.split(',').map(city => city.trim());
+    let units = req.query['units'];
 
-    const queryParams = 
-    {
-        APPID: openweatherKey,
-        q: req.query['city'],
-        units: req.query['units']
-    };
+    getAllCitiesWeather(citiesArray, units).then(citiesWeather => {
+        res.status(200);
+        res.type('text/html');
+        res.render('weather', 
+        {
+            cities: citiesWeather,
+            units: getDisplayUnit(units)
+        });
+    })
+    .catch(err => {
+        console.info('Get All error: ', err);
+    })
 
-    Request.get('https://api.openweathermap.org/data/2.5/weather', 
-        { qs: queryParams},
-        (err, apiRes, apiBody) => {
-            if (err) {
-                console.info('Err: ', err);
-            }
-
-            const result = JSON.parse(apiBody);
-
-            res.status(200);
-            res.type('text/html');
-
-            if (result['cod'] == 200)
-            {
-                res.render('weather', 
-                {
-                    cityExists: true,
-                    city: result['name'],
-                    weather: result['weather'],
-                    tempMin: result['main']['temp_min'],
-                    tempMax: result['main']['temp_max'],
-                    units: getDisplayUnit(req.query['units'])
-                });
-            }
-            else {
-                //city not found
-                res.render('weather',
-                {
-                    cityExists: false,
-                    city: req.query['city']
-                });
-            }
-        }
-    );
 });
 
 app.get(['/', '/index.html'], (req, res) => {
