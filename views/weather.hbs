@@ -1,0 +1,28 @@
+{{#if cityExists}}
+<div>
+    <h2>Weather for {{city}}</h2>
+</div>
+<div>
+    {{#each weather}}
+    <div>
+        <div>
+            <img src='http://openweathermap.org/img/w/{{this.icon}}.png' width="100">
+        </div>
+        <div>
+            Main: {{this.main}}
+            <br>
+            Description: {{this.description}}
+        </div>
+    </div>
+    {{/each}}
+
+</div>
+<div>
+    <h3>Min Temp: {{tempMin}}<sup>o</sup>{{units}}</h3>
+    <h3>Max Temp: {{tempMax}}<sup>o</sup>{{units}}</h3>
+</div>
+{{else}}
+<div>
+    <h2>City Name <em>{{city}}</em> not found. Please try again</h2>
+</div>
+{{/if}}
